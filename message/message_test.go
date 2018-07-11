@@ -11,15 +11,13 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{}
 
-/*
-This test is not fixed yet. Forever loop is yet not breaking
-*/
 func TestSend(t *testing.T) {
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := upgrader.Upgrade(w, r, nil)
@@ -76,6 +74,10 @@ func TestSend(t *testing.T) {
 		}
 	}()
 
+	go func() {
+		time.Sleep(2 * time.Millisecond)
+		close(done)
+	}()
 	//Send message to server
 	err = Send(ws, done, "xyz@xyz.com", "Test")
 	if err != nil {
@@ -86,7 +88,6 @@ func TestSend(t *testing.T) {
 	if err := tmpfile.Close(); err != nil {
 		log.Fatal(err)
 	}
-	close(done)
 
 }
 func TestSendLoginRequest(t *testing.T) {
